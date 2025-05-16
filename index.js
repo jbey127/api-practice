@@ -21,8 +21,12 @@ app.post('/items', (req, res) => {
     id: items.length + 1,
     name: req.body.name
   };
+let match = items.find((obj) => obj.name == newItem.name)
+if(match){
   items.push(newItem);
   res.status(201).json(newItem);
+}
+else{ res.status(400).json({error: "name already exists"})}
 });
 
 // PUT - Update an existing item by ID
