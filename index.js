@@ -28,7 +28,9 @@ app.use(express.json()); // Middleware to parse JSON
       items.push(newItem);
       res.status(201).json(newItem);
     }
-    else{res.status(400).json({message: "name already exists"})}
+    else{res.status(400).json({
+      status: 400,
+      message: "name already exists"})}
     });
 
     // PUT - Update an existing item by ID
@@ -54,6 +56,8 @@ app.use(express.json()); // Middleware to parse JSON
     app.post('/retry', (req, res)=>{
 
     })
+
+  /* */
 
 
 
