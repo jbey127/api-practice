@@ -2,6 +2,7 @@ const axios = require('axios');
 const express = require('express');
 const app = express();
 const port = 3000;
+const server = "https://api-practice-6jrk.onrender.com"
 
 
 async function makePostRequest(url, postData) {
@@ -77,7 +78,7 @@ app.use(express.json()); // Middleware to parse JSON
   - Return success or give up
   */
     app.get('/retry', async (req, res)=>{
-      let url = "http://localhost:3001/unreliable-api"
+      let url = server + "/unreliable-api"
   
       let retrycount = 0
       while(retrycount <= 3){
