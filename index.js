@@ -3,9 +3,6 @@ const express = require('express');
 const app = express();
 const port = 3000;
 
-// Configure axios defaults
-axios.defaults.timeout = 5000; // 5 second timeout
-axios.defaults.headers.common['Content-Type'] = 'application/json';
 
 async function makePostRequest(url, postData) {
   try {
@@ -102,6 +99,7 @@ app.use(express.json()); // Middleware to parse JSON
         else {
           console.log("Unexpected response:", response)
           res.status(400).json({message: "Unexpected response", retrycount: retrycount})
+          retrycount++
         }
       }
       catch(error){
