@@ -13,10 +13,12 @@ async function makePostRequest(url,postData) {
 }
 async function makeGetRequest(url) {
   try {
+      console.log("Making GET request to:", url)
       const response = await axios.get(url);
-      console.log("Response Data:", response.data);
+      return response.data;
   } catch (error) {
-      console.error("Error:", error.response ? error.response.data : error.message);
+      console.error("Error in makeGetRequest:", error.response ? error.response.data : error.message);
+      throw error; // Re-throw the error to be caught by the caller
   }
 }
 
@@ -27,10 +29,10 @@ app.use(express.json()); // Middleware to parse JSON
 //Level 1 - Very Basic Requests in memory data
 
     // In-memory data store
-    let items = [
-      { id: 1, name: 'Item One' },
-      { id: 2, name: 'Item Two' }
-    ];
+      let items = [
+        { id: 1, name: 'Item One' },
+        { id: 2, name: 'Item Two' }
+      ];
 
     // GET - Retrieve all items from in mem data story
     app.get('/items', (req, res) => {
@@ -73,10 +75,39 @@ app.use(express.json()); // Middleware to parse JSON
   - Retry up to 3 times with delay
   - Return success or give up
   */
-    app.get('/retry', (req, res)=>{
+    app.get('/retry', async (req, res)=>{
       let url = "https://api-practice-6jrk.onrender.com/unreliable-api"
-      makeGetRequest(url)
-    })
+  
+      let retrycount = 0
+      while(retrycount <= 3){
+      try{
+        console.log("Attempting to make request...")
+        let response = await makeGetRequest(url)
+        console.log("Response received:", response)
+        
+        if(response.data.message === "retry"){
+          console.log("Got retry message. Retry Count:", retrycount)
+          retrycount++
+        }
+        else if(response.data.message === "success"){
+          console.log("Got success message")
+          res.status(200).json({message: "success", retrycount: retrycount})
+          break
+
+        }
+        else {
+          console.log("Unexpected response:", response)
+          res.status(400).json({message: "Unexpected response", retrycount: retrycount})
+        }
+      }
+      catch(error){
+        console.log("Error caught:", error)
+      }
+    }
+    if(retrycount > 3){
+    res.status(400).json({message: "Retries Exceeded", retrycount: retrycount})
+  }
+  })  
 
   /* */
 

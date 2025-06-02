@@ -14,7 +14,7 @@ app.use(express.json()); // Middleware to parse JSON
             return res.status(200).json({data: {message: "success", live: "true"}})
         }
         else{
-            return res.status(400).json({data: {message: "error, retry", live: "false"}})
+            return res.status(200).json({data: {message: "retry", live: "false"}})
         }
     });
 
