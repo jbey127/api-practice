@@ -11,9 +11,13 @@ app.use(express.json()); // Middleware to parse JSON
     app.get('/unreliable-api', (req, res) => {
         let random = Math.round(Math.random())
         if (random == 1){
-            return res.status(200).json({data: {message: "success"}})
+            return res.status(200).json({data: {message: "success", live: "true"}})
         }
         else{
-            return res.status(400).json({data: {message: "error, retry"}})
+            return res.status(400).json({data: {message: "error, retry", live: "false"}})
         }
+    });
+
+    app.listen(port, () => {
+        console.log(`Server is running on port ${port}`);
     });
