@@ -3,26 +3,30 @@ const express = require('express');
 const app = express();
 const port = 3000;
 
-async function makePostRequest(url,postData) {
+// Configure axios defaults
+axios.defaults.timeout = 5000; // 5 second timeout
+axios.defaults.headers.common['Content-Type'] = 'application/json';
+
+async function makePostRequest(url, postData) {
   try {
-      const response = await axios.post(url, postData);
-      return response.data;
+    const response = await axios.post(url, postData);
+    return response.data;
   } catch (error) {
-      return error.response ? error.response.data : error.message;
+    console.error("Error in makePostRequest:", error.response ? error.response.data : error.message);
+    throw error; // Re-throw to maintain consistent error handling
   }
 }
+
 async function makeGetRequest(url) {
   try {
-      console.log("Making GET request to:", url)
-      const response = await axios.get(url);
-      return response.data;
+    console.log("Making GET request to:", url);
+    const response = await axios.get(url);
+    return response.data;
   } catch (error) {
-      console.error("Error in makeGetRequest:", error.response ? error.response.data : error.message);
-      throw error; // Re-throw the error to be caught by the caller
+    console.error("Error in makeGetRequest:", error.response ? error.response.data : error.message);
+    throw error;
   }
 }
-
-
 
 app.use(express.json()); // Middleware to parse JSON
 
@@ -76,7 +80,7 @@ app.use(express.json()); // Middleware to parse JSON
   - Return success or give up
   */
     app.get('/retry', async (req, res)=>{
-      let url = "https://api-practice-6jrk.onrender.com/unreliable-api"
+      let url = "http://localhost:3001/unreliable-api"
   
       let retrycount = 0
       while(retrycount <= 3){
