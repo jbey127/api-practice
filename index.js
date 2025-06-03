@@ -1,8 +1,17 @@
+require('dotenv').config();
+console.log('Cloudinary Config:', {
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY ? 'API Key exists' : 'API Key missing',
+    api_secret: process.env.CLOUDINARY_API_SECRET ? 'API Secret exists' : 'API Secret missing'
+});
 const axios = require('axios');
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
 const unreliableApiUrl = process.env.UNRELIABLE_API_URL || "http://localhost:3001/unreliable-api";
+
+// Import routes
+const imageRoutes = require('./routes/images');
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -12,6 +21,9 @@ app.use((err, req, res, next) => {
         error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
     });
 });
+
+// Use routes
+app.use('/api', imageRoutes);
 
 // Unreliable API endpoint
 app.get('/unreliable-api', (req, res) => {
