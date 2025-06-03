@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .endpoint {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .method {
+            font-weight: bold;
+            color: #3498db;
+        }
+        .url {
+            color: #2c3e50;
+            font-family: monospace;
+            background-color: #eee;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        .description {
+            margin-top: 10px;
+            color: #666;
+        }
+        a{
+            text-decoration: none;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Basic API by <a href="https://github.com/jbey127" style="text-decoration: none;">Justus</a></h1>
+        
+        <div class="endpoint">
+            <div class="method">GET</div>
+            <div class="url"><a href="/items" style="text-decoration: none; ">/items</a></div>
+            <div class="description">Retrieve all items from the in-memory data store</div>
+        </div>
+
+        <div class="endpoint">
+            <div class="method">POST</div>
+            <div class="url"><a href="/items" style="text-decoration: none; ">/items</a></div>
+            <div class="description">Add a new item to the data store</div>
+        </div>
+
+        <div class="endpoint">
+            <div class="method">PUT</div>
+            <div class="url"><a href="/items/:id" style="text-decoration: none; ">/items/:id</a></div>
+            <div class="description">Update an existing item by ID</div>
+        </div>
+
+        <div class="endpoint">
+            <div class="method">GET</div>
+            <div class="url"><a href="/retry" style="text-decoration: none; ">/retry</a></div>
+            <div class="description">Test the retry mechanism with an unreliable API endpoint</div>
+        </div>
+    </div>
+</body>
+</html> 

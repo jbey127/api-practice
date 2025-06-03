@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Items List</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #3498db;
+        }
+        .item-id {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .item-name {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+        }
+        .error {
+            color: #e74c3c;
+            padding: 10px;
+            background-color: #fde8e8;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Items List</h1>
+        <div id="items-container">
+            <div class="loading">Loading items...</div>
+        </div>
+    </div>
+
+    <script>
+        // Function to fetch and display items
+        async function fetchItems() {
+            try {
+                const response = await fetch('/api/items');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const items = await response.json();
+                
+                const container = document.getElementById('items-container');
+                container.innerHTML = ''; // Clear loading message
+                
+                items.forEach(item => {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'item';
+                    itemElement.innerHTML = `
+                        <div class="item-id">ID: ${item.id}</div>
+                        <div class="item-name">${item.name}</div>
+                    `;
+                    container.appendChild(itemElement);
+                });
+            } catch (error) {
+                const container = document.getElementById('items-container');
+                container.innerHTML = `
+                    <div class="error">
+                        Error loading items: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Fetch items when the page loads
+        document.addEventListener('DOMContentLoaded', fetchItems);
+    </script>
+</body>
+</html>

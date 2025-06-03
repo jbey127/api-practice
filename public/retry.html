@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retry Mechanism Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .attempt {
+            background-color: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #3498db;
+            transition: all 0.3s ease;
+        }
+        .attempt.success {
+            border-left-color: #2ecc71;
+            background-color: #f0fff4;
+        }
+        .attempt.error {
+            border-left-color: #e74c3c;
+            background-color: #fff5f5;
+        }
+        .attempt.retry {
+            border-left-color: #f1c40f;
+            background-color: #fffaf0;
+        }
+        .timestamp {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .status {
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .error-message {
+            color: #e74c3c;
+        }
+        .button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+        .summary {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e8f4f8;
+            border-radius: 4px;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+        }
+        .attempt-number {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Retry Mechanism Demo</h1>
+        <button class="button" onclick="startRetry()">Start Retry Test</button>
+        <div id="summary" class="summary" style="display: none;">
+            <h3>Test Summary</h3>
+            <div id="summary-content"></div>
+        </div>
+        <div id="attempts-container"></div>
+        <a href="/">Back to Home</a>
+    </div>
+
+    <script>
+        async function startRetry() {
+            const container = document.getElementById('attempts-container');
+            const summary = document.getElementById('summary');
+            const summaryContent = document.getElementById('summary-content');
+            const server = "/retry-data";
+            
+            // Clear previous results and show loading
+            container.innerHTML = '<div class="loading">Testing retry mechanism...</div>';
+            summary.style.display = 'none';
+            
+            try {
+                const response = await fetch(server);
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // Display summary
+                summary.style.display = 'block';
+                summaryContent.innerHTML = `
+                    <p><strong>Final Status:</strong> ${data.message}</p>
+                    <p><strong>Total Retries:</strong> ${data.retrycount}</p>
+                `;
+                
+                // Set background color based on status
+                if(data.message === "Retries Exceeded"){
+                    summary.style.backgroundColor = '#fff5f5';
+                } else if(data.message === "success") {
+                    summary.style.backgroundColor = '#f0fff4';
+                } else {
+                    summary.style.backgroundColor = '#fffaf0';
+                }
+                
+                // Display attempts
+                container.innerHTML = '';
+                if (data.attempts && data.attempts.length > 0) {
+                    data.attempts.forEach(attempt => {
+                        const attemptElement = document.createElement('div');
+                        attemptElement.className = `attempt ${attempt.status}`;
+                        
+                        attemptElement.innerHTML = `
+                            <div class="attempt-number">Attempt ${attempt.attempt}</div>
+                            <div class="timestamp">${new Date(attempt.timestamp).toLocaleTimeString()}</div>
+                            <div class="status">${attempt.message}</div>
+                        `;
+                        container.appendChild(attemptElement);
+                    });
+                } else {
+                    container.innerHTML = '<div class="attempt">No attempts recorded</div>';
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                container.innerHTML = `
+                    <div class="attempt error">
+                        <div class="error-message">Error: ${error.message}</div>
+                        <div class="error-details">Please try again later</div>
+                    </div>
+                `;
+                summary.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

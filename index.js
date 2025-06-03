@@ -1,23 +1,21 @@
 const axios = require('axios');
 const express = require('express');
 const app = express();
-const port = 3000;
-const server = "https://api-practice-6jrk.onrender.com"
+const port = process.env.PORT || 3000;
+const server = process.env.API_SERVER || "http://localhost:3001"
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Server Error:', err);
+    res.status(500).json({
+        message: 'Internal Server Error',
+        error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+    });
+});
 
 
-async function makePostRequest(url, postData) {
+makeGetRequest = async (url) => {
   try {
-    const response = await axios.post(url, postData);
-    return response.data;
-  } catch (error) {
-    console.error("Error in makePostRequest:", error.response ? error.response.data : error.message);
-    throw error; // Re-throw to maintain consistent error handling
-  }
-}
-
-async function makeGetRequest(url) {
-  try {
-    console.log("Making GET request to:", url);
     const response = await axios.get(url);
     return response.data;
   } catch (error) {
@@ -26,7 +24,14 @@ async function makeGetRequest(url) {
   }
 }
 
+// Serve static files from the 'public' directory
+app.use(express.static('public'));
+
 app.use(express.json()); // Middleware to parse JSON
+
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/public/home.html');
+});
 
 //Level 1 - Very Basic Requests in memory data
 
@@ -36,8 +41,13 @@ app.use(express.json()); // Middleware to parse JSON
         { id: 2, name: 'Item Two' }
       ];
 
-    // GET - Retrieve all items from in mem data story
+    // GET - Retrieve all items from in mem data store and display them in items.html
     app.get('/items', (req, res) => {
+      res.sendFile(__dirname + '/public/items.html')
+    });
+
+    // GET - JSON endpoint for items data
+    app.get('/api/items', (req, res) => {
       res.json(items);
     });
 
@@ -77,40 +87,98 @@ app.use(express.json()); // Middleware to parse JSON
   - Retry up to 3 times with delay
   - Return success or give up
   */
-    app.get('/retry', async (req, res)=>{
-      let url = server + "/unreliable-api"
+    app.get('/retry-data', async (req, res)=>{
+      console.log('Received request to /retry-data');
+      let url = "http://localhost:3001/unreliable-api"
   
       let retrycount = 0
+      let attempts = []
       while(retrycount <= 3){
-      try{
-        console.log("Attempting to make request...")
-        let response = await makeGetRequest(url)
-        console.log("Response received:", response)
-        
-        if(response.data.message === "retry"){
-          console.log("Got retry message. Retry Count:", retrycount)
-          retrycount++
+        try{
+          console.log("Attempting to make request...")
+          let response = await makeGetRequest(url)
+          console.log("Response received:", response)
+          
+          //Failure case
+          if(response.data.message === "retry"){
+            console.log("Got retry message. Retry Count:", retrycount)
+            attempts.push({
+              attempt: retrycount + 1,
+              status: "retry",
+              message: "Retry requested",
+              timestamp: new Date().toISOString()
+            })
+            retrycount++
+          }
+          //Success case
+          else if(response.data.message === "success"){
+            console.log("Got success message")
+            attempts.push({
+              attempt: retrycount + 1,
+              status: "success",
+              message: "Success!",
+              timestamp: new Date().toISOString()
+            })
+            console.log('Sending success response:', {
+              message: "success", 
+              retrycount: retrycount,
+              attempts: attempts
+            });
+            return res.status(200).json({
+              message: "success", 
+              retrycount: retrycount,
+              attempts: attempts
+            })
+          }
+          //Unexpected response case
+          else {
+            console.log("Unexpected response:", response)
+            attempts.push({
+              attempt: retrycount + 1,
+              status: "error",
+              message: "Unexpected response",
+              timestamp: new Date().toISOString()
+            })
+            console.log('Sending error response:', {
+              message: "Unexpected response", 
+              retrycount: retrycount,
+              attempts: attempts
+            });
+            return res.status(400).json({
+              message: "Unexpected response", 
+              retrycount: retrycount,
+              attempts: attempts
+            })
+          }
         }
-        else if(response.data.message === "success"){
-          console.log("Got success message")
-          res.status(200).json({message: "success", retrycount: retrycount})
-          break
-
-        }
-        else {
-          console.log("Unexpected response:", response)
-          res.status(400).json({message: "Unexpected response", retrycount: retrycount})
+        //Error case
+        catch(error){
+          console.log("Error caught:", error)
+          attempts.push({
+            attempt: retrycount + 1,
+            status: "error",
+            message: error.message,
+            timestamp: new Date().toISOString()
+          })
           retrycount++
         }
       }
-      catch(error){
-        console.log("Error caught:", error)
-      }
-    }
-    if(retrycount > 3){
-    res.status(400).json({message: "Retries Exceeded", retrycount: retrycount})
-  }
-  })  
+      
+      // If we get here, we've exceeded retry count
+      console.log('Sending retries exceeded response:', {
+        message: "Retries Exceeded", 
+        retrycount: retrycount,
+        attempts: attempts
+      });
+      return res.status(400).json({
+        message: "Retries Exceeded", 
+        retrycount: retrycount,
+        attempts: attempts
+      })
+    }) 
+  app.get('/retry', (req, res)=>{
+    res.sendFile(__dirname + '/public/retry.html')
+  })
 
   /* */
 
@@ -118,5 +186,6 @@ app.use(express.json()); // Middleware to parse JSON
 
 // Start the server
 app.listen(port, () => {
-  console.log(`API server running at http://localhost:${port}`);
+    console.log(`Server running on port ${port}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
