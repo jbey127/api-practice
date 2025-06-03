@@ -2,7 +2,7 @@ const axios = require('axios');
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
-const server = process.env.API_SERVER || "http://localhost:3001"
+const unreliableApiUrl = process.env.UNRELIABLE_API_URL || "http://localhost:3001/unreliable-api";
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -89,7 +89,7 @@ app.get('/', (req, res) => {
   */
     app.get('/retry-data', async (req, res)=>{
       console.log('Received request to /retry-data');
-      let url = "http://localhost:3001/unreliable-api"
+      let url = unreliableApiUrl;
   
       let retrycount = 0
       let attempts = []

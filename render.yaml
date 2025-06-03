@@ -8,4 +8,6 @@ services:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 3000 
+        value: 3000
+      - key: UNRELIABLE_API_URL
+        value: https://your-unreliable-api-url.onrender.com/unreliable-api  # Replace with your unreliable API URL 
