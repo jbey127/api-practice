@@ -105,16 +105,16 @@
             const container = document.getElementById('attempts-container');
             const summary = document.getElementById('summary');
             const summaryContent = document.getElementById('summary-content');
-            const server = "/retry-data";
+            const unreliableApiUrl = "/retry-data";
             
             // Clear previous results and show loading
             container.innerHTML = '<div class="loading">Testing retry mechanism...</div>';
             summary.style.display = 'none';
             
             try {
-                const response = await fetch(server);
+                const response = await fetch(unreliableApiUrl);
                 if (!response.ok) {
-                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                    throw new Error(`Server returned ${response.status}: ${response.json()}`);
                 }
                 
                 const data = await response.json();

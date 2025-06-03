@@ -13,6 +13,17 @@ app.use((err, req, res, next) => {
     });
 });
 
+// Unreliable API endpoint
+app.get('/unreliable-api', (req, res) => {
+  let random = Math.round(Math.random())
+  console.log('Unreliable API called, random value:', random);
+    if (random == 1){
+        return res.status(200).json({data: {message: "success", live: "true"}})
+    }
+    else{
+        return res.status(200).json({data: {message: "retry", live: "false"}})
+    }
+});
 
 makeGetRequest = async (url) => {
   try {
@@ -89,15 +100,17 @@ app.get('/', (req, res) => {
   */
     app.get('/retry-data', async (req, res)=>{
       console.log('Received request to /retry-data');
-      let url = unreliableApiUrl;
+      // Use the full URL including the protocol and host
+      let url = `http://${req.headers.host}/unreliable-api`;
+      console.log('Making request to:', url);
   
-      let retrycount = 0
-      let attempts = []
+      let retrycount = 0;
+      let attempts = [];
       while(retrycount <= 3){
         try{
-          console.log("Attempting to make request...")
-          let response = await makeGetRequest(url)
-          console.log("Response received:", response)
+          console.log("Attempting to make request...");
+          let response = await makeGetRequest(url);
+          console.log("Response received:", response);
           
           //Failure case
           if(response.data.message === "retry"){
