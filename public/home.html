@@ -5,27 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>API Documentation</title>
     <link rel="stylesheet" href="styles.css">
-    <script>
-        const publicId = 'Main_oovtxg';
-        
-        async function loadImage() {
-            try {
-                const response = await fetch(`/api/images/${publicId}`);
-                const data = await response.json();
-                document.getElementById('profileImage').src = data.secure_url;
-            } catch (error) {
-                console.error('Error loading image:', error);
-            }
-        }
-
-        loadImage();
-    </script>
 </head>
 <body>
     <div class="container">
         <div class="hero">
             <h1>Basic API by <a href="https://github.com/jbey127" style="text-decoration: none;">Justus</a></h1>
-            <img id="profileImage" class="profile-image" alt="Profile Image" width="100" height="100">
+            <img id="profileImage" class="profile-image" alt="Profile Image" width="100" height="100" style="display: none;">
         </div>
         <p> This is a basic API that contains projects I've built to learn Express.js and other aspects of JavaScript
             <br></p>
@@ -55,5 +40,21 @@
         </div>
     </div>
 
+    <script>
+        const publicId = 'Main_oovtxg';
+        
+        async function loadImage() {
+            try {
+                const response = await fetch(`/api/images/${publicId}`);
+                const data = await response.json();
+                document.getElementById('profileImage').src = data.secure_url;
+            } catch (error) {
+                console.error('Error loading image:', error);
+            }
+            document.getElementById('profileImage').style.display = 'block';
+        }
+
+        loadImage();
+    </script>
 </body>
 </html> 
