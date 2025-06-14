@@ -1,3 +1,8 @@
+/*
+Latest Update: I realized I want to fully build out the get, post, and put endpoints as pages of the app.
+From there everything I will be doing will mostly focus on backend. After I finish looking into 
+the post app page 
+*/ 
 require('dotenv').config();
 console.log('Cloudinary Config:', {
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -9,6 +14,15 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
 const unreliableApiUrl = process.env.UNRELIABLE_API_URL || "http://localhost:3001/unreliable-api";
+makeGetRequest = async (url) => {
+  try {
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    console.error("Error in makeGetRequest:", error.response ? error.response.data : error.message);
+    throw error;
+  }
+}
 
 // Import routes
 const imageRoutes = require('./routes/images');
@@ -37,61 +51,66 @@ app.get('/unreliable-api', (req, res) => {
     }
 });
 
-makeGetRequest = async (url) => {
-  try {
-    const response = await axios.get(url);
-    return response.data;
-  } catch (error) {
-    console.error("Error in makeGetRequest:", error.response ? error.response.data : error.message);
-    throw error;
-  }
-}
 
 // Serve static files from the 'public' directory
 app.use(express.static('public'));
 
 app.use(express.json()); // Middleware to parse JSON
 
+//Pages
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/public/home.html');
 });
 
-//Level 1 - Very Basic Requests in memory data
+app.get('/retry', (req, res)=>{
+  res.sendFile(__dirname + '/public/retry.html')
+})
+app.get('/loan-calc', (req,res)=>{
+  res.sendFile(__dirname + '/public/loan-calculator.html')
+})
 
-    // In-memory data store
-      let items = [
-        { id: 1, name: 'Item One' },
-        { id: 2, name: 'Item Two' }
-      ];
+/*Level 1 - Very Basic Requests in memory data
+  This level will conduct basic API calls for all the methods. It also includes 
+*/
 
-    // GET - Retrieve all items from in mem data store and display them in items.html
-    app.get('/items', (req, res) => {
-      res.sendFile(__dirname + '/public/items.html')
-    });
 
-    // GET - JSON endpoint for items data
-    app.get('/api/items', (req, res) => {
-      res.json(items);
-    });
+// display Items page 
+app.get('/items', (req, res) => {
+  res.sendFile(__dirname + '/public/items.html')
+});
 
+// In-memory data store
+let items = [
+  { id: 1, name: 'Item One' },
+  { id: 2, name: 'Item Two' }
+];
+// GET - API endpoint for items data
+  app.get('/api/items', (req, res) => {
+            res.json(items);
+          });
+app.get('/post-items', (req, res)=>{
+  res.sendFile(__dirname + '/public/items-post.html')
+})
     // POST - Add a new item
-    app.post('/items', (req, res) => {
+    app.post('/api/post-items', (req, res) => {
       const newItem = {
         id: items.length + 1,
         name: req.body.name
       };
-    let match = items.find((obj) => obj.name == newItem.name)
-    if(match){
+    console.log(newItem)
+    let match = items.findIndex((obj) => obj.name == newItem.name)
+    if(match == -1){
       items.push(newItem);
-      res.status(201).json(newItem);
+      res.status(201).json(items);
     }
     else{res.status(400).json({
       status: 400,
       message: "name already exists"})}
     });
 
+
     // PUT - Update an existing item by ID
-    app.put('/items/:id', (req, res) => {
+    app.put('/api/put-items/:id', (req, res) => {
   const itemId = parseInt(req.params.id);
   const itemIndex = items.findIndex(item => item.id === itemId);
 
@@ -103,9 +122,9 @@ app.get('/', (req, res) => {
   res.json(items[itemIndex]);
 });
 
-// Level 2 - Fundamental Projects
+// Level 2 - Fundamental Projects will require auth
   
-  /* GET - retry API
+  /* GET - retry API backoff logic
   - Simulate an unreliable API that fails randomly
   - Retry up to 3 times with delay
   - Return success or give up
@@ -201,15 +220,8 @@ app.get('/', (req, res) => {
         attempts: attempts
       })
     }) 
-  app.get('/retry', (req, res)=>{
-    res.sendFile(__dirname + '/public/retry.html')
-  })
 
-  /* */
-
-
-
-// Start the server
+    // Start the server
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);

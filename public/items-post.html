@@ -1,0 +1,29 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retry Mechanism Demo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Submit New Items</h1>
+        <div id="summary"  style="display: display;">
+            <iframe data-tally-src="https://tally.so/embed/wAWKRN?alignLeft=1&hideTitle=1&dynamicHeight=&transparentBackground=1" loading="lazy" width="100%" height="584" frameborder="0" marginheight="0" marginwidth="0" title="Quick Contact Submit"></iframe>
+            <script>var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=typeof Tally?Tally.loadEmbeds():d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach((function(e){e.src=e.dataset.tallySrc}))};if("undefined"!=typeof Tally)v();else if(d.querySelector('script[src="'+w+'"]')==null){var s=d.createElement("script");s.src=w,s.onload=v,s.onerror=v,d.body.appendChild(s);}</script>
+            <script>
+            window.addEventListener('message', (event) => {
+                if (event.data?.type === 'tally:submit') {
+                  console.log('Tally form submitted:', event.data)
+                  
+                }
+              })
+             </script> 
+            <div id="summary-content"></div>
+        </div>
+        <div id="attempts-container"></div>
+        <a href="/">Back to Home</a>
+    </div>
+
+</body>
+</html>

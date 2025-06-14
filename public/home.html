@@ -14,7 +14,9 @@
         </div>
         <p> This is a basic API that contains projects I've built to learn Express.js and other aspects of JavaScript
             <br></p>
-        
+
+        <h2>Level 1</h2>
+        <p>This level contains very basic calls to the API it utilizes the most basic methods to make use of the in memory data store</p>
         <div class="endpoint">
             <div class="method">GET</div>
             <div class="url"><a href="/items" style="text-decoration: none; ">/items</a></div>
@@ -23,8 +25,8 @@
 
         <div class="endpoint">
             <div class="method">POST</div>
-            <div class="url"><a href="/items" style="text-decoration: none; ">/items</a></div>
-            <div class="description">Add a new item to the data store</div>
+            <div class="url"><a href="/post-items" style="text-decoration: none; ">/post-items</a></div>
+            <div class="description">Add a new item to the in-memory data store. This is to test this endpoint use a </div>
         </div>
 
         <div class="endpoint">
@@ -33,11 +35,43 @@
             <div class="description">Update an existing item by ID</div>
         </div>
 
-        <div class="endpoint">
-            <div class="method">GET</div>
+        <h2>Level 2</h2>
+        <p>This level focuses on common practices when it </p>
+
+        <div class="endpoint level2">
+            <div class="hero" style="margin: 0px;">
+                <div class="method">GET</div>
+                <div class="hero" style="margin-bottom: 0px;">
+                    <p class="tag">Back off logic</p>
+                </div>
+            </div>
             <div class="url"><a href="/retry" style="text-decoration: none; ">/retry</a></div>
             <div class="description">Test the retry mechanism with an unreliable API endpoint</div>
         </div>
+        <div class="endpoint level2">
+            <div class="hero" style="margin: 0px;">
+                <div class="method">GET</div>
+                <div class="hero" style="margin-bottom: 0px;">
+                    <p class="tag">Back off logic</p>
+                </div>
+            </div>
+            <div class="url"><a href="/api-chain" style="text-decoration: none; ">/api-chain</a></div>
+            <div class="description">Test the retry mechanism with an unreliable API endpoint</div>
+        </div>
+        <div class="endpoint level2">
+            <div class="hero" style="margin: 0px;">
+                <div class="method">GET</div>
+                <div class="hero" style="margin-bottom: 0px;">
+                    <p class="tag">AI</p>
+                </div>
+            </div>
+            <div class="url"><a href="/loan-calc" style="text-decoration: none; ">/loan-calc</a></div>
+            <div class="description">This endpoint was something I built relatively quickly with AI. It is a loan calculator for determining how much balance you have after each payment.
+                <br>
+                A lot of available apps just tell you how to pay it off but don't provide a month by month visual.
+            </div>
+        </div>
+    </div>
     </div>
 
     <script>
@@ -52,6 +86,7 @@
                 console.error('Error loading image:', error);
             }
             document.getElementById('profileImage').style.display = 'block';
+            
         }
 
         loadImage();

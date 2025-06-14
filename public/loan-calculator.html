@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Payoff Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container" style="width: 900px; max-width: 80%">
+        <h1>Loan Payoff Calculator</h1>
+        
+        <form id="loanForm">
+            <div class="form-group">
+                <label for="loanAmount">Current Balance ($)</label>
+                <input type="number" id="loanAmount" required min="0" step="0.01" value="10000">
+            </div>
+            
+            <div class="form-group">
+                <label for="interestRate">Annual Interest Rate (%)</label>
+                <input type="number" id="interestRate" required min="0" step="0.01" value="5">
+            </div>
+            
+            <div class="form-group">
+                <label for="monthlyPayment">Monthly Minimum Payment ($)</label>
+                <input type="number" id="monthlyPayment" required min="0" step="0.01" value="200">
+            </div>
+            
+            <div class="form-group">
+                <label for="extraPayment">Extra Monthly Payment ($)</label>
+                <input type="number" id="extraPayment" min="0" step="0.01" value="0">
+            </div>
+            
+            <button type="submit" class="button">Calculate</button>
+        </form>
+
+        <div class="chart-container" id="bin" style="display:none;">
+            <div class="summary" id="summary" style="padding:10px;  margin:0px 0px">
+                <!-- Summary will be populated by JavaScript -->
+            </div>
+            <div style="width: 75%;">
+            <canvas id="loanChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let loanChart = null;
+
+        function calculateLoan(principal, annualRate, monthlyPayment, extraPayment = 0) {
+            const monthlyRate = annualRate / 100 / 12;
+            let balance = principal;
+            let totalPayment = 0;
+            let totalInterest = 0;
+            const schedule = [];
+            const scheduleWithExtra = [];
+            let month = 1;
+            
+            // Calculate with minimum payment
+            while (balance > 0 && month <= 360) { // Cap at 30 years
+                const interestPayment = balance * monthlyRate;
+                let principalPayment = monthlyPayment - interestPayment;
+                
+                // Ensure we don't overpay
+                if (principalPayment > balance) {
+                    principalPayment = balance;
+                }
+                
+                balance -= principalPayment;
+                totalPayment += monthlyPayment;
+                totalInterest += interestPayment;
+                
+                schedule.push({
+                    month,
+                    balance,
+                    principalPayment,
+                    interestPayment,
+                    totalPayment
+                });
+                
+                month++;
+            }
+            
+            // Reset for calculation with extra payment
+            balance = principal;
+            totalPayment = 0;
+            totalInterest = 0;
+            month = 1;
+            
+            // Calculate with extra payment
+            while (balance > 0 && month <= 360) {
+                const interestPayment = balance * monthlyRate;
+                let principalPayment = monthlyPayment - interestPayment;
+                
+                // Add extra payment to principal
+                if (extraPayment > 0) {
+                    principalPayment += extraPayment;
+                }
+                
+                // Ensure we don't overpay
+                if (principalPayment > balance) {
+                    principalPayment = balance;
+                }
+                
+                balance -= principalPayment;
+                totalPayment += monthlyPayment + extraPayment;
+                totalInterest += interestPayment;
+                
+                scheduleWithExtra.push({
+                    month,
+                    balance,
+                    principalPayment,
+                    interestPayment,
+                    totalPayment
+                });
+                
+                month++;
+            }
+            
+            return {
+                schedule,
+                scheduleWithExtra,
+                totalPayment,
+                totalInterest,
+                actualTerm: schedule.length / 12,
+                actualTermWithExtra: scheduleWithExtra.length / 12
+            };
+        }
+
+        function updateChart(data) {
+            const ctx = document.getElementById('loanChart').getContext('2d');
+            
+            if (loanChart) {
+                loanChart.destroy();
+            }
+            
+            loanChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.schedule.map(item => `Month ${item.month}`),
+                    datasets: [
+                        {
+                            label: 'Minimum Payment',
+                            data: data.schedule.map(item => item.balance),
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            fill: true
+                        },
+                        {
+                            label: 'With Extra Payment',
+                            data: data.scheduleWithExtra.map(item => item.balance),
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Balance ($)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Month'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateSummary(data) {
+            const summary = document.getElementById('summary');
+            const monthlyPayment = parseFloat(document.getElementById('monthlyPayment').value);
+            const extraPayment = parseFloat(document.getElementById('extraPayment').value) || 0;
+            
+            summary.innerHTML = `
+                <h3 style="font-size: 18px; margin-top:0px">Loan Summary</h3>
+                <h4 style="font-size: 15px">With Minimum Payment:</h4>
+                <p class="sum-text">Monthly Payment: $${monthlyPayment.toFixed(2)}</p>
+                <p class="sum-text">Total Payment: $${data.schedule[data.schedule.length - 1].totalPayment.toFixed(2)}</p>
+                <p class="sum-text">Total Interest: $${(data.schedule[data.schedule.length - 1].totalPayment - parseFloat(document.getElementById('loanAmount').value)).toFixed(2)}</p>
+                <p class="sum-text">Payoff Time: ${(data.schedule.length / 12).toFixed(1)} years</p>
+                
+                <h4 style="font-size: 15px">With Extra Payment:</h4>
+                <p class="sum-text">Monthly Payment: $${(monthlyPayment + extraPayment).toFixed(2)}</p>
+                <p class="sum-text">Total Payment: $${data.scheduleWithExtra[data.scheduleWithExtra.length - 1].totalPayment.toFixed(2)}</p>
+                <p class="sum-text">Total Interest: $${(data.scheduleWithExtra[data.scheduleWithExtra.length - 1].totalPayment - parseFloat(document.getElementById('loanAmount').value)).toFixed(2)}</p>
+                <p class="sum-text">Payoff Time: ${(data.scheduleWithExtra.length / 12).toFixed(1)} years</p>
+                
+                <h4 style="font-size: 15px">Savings:</h4>
+                <p class="sum-text">Time Saved: ${((data.schedule.length - data.scheduleWithExtra.length) / 12).toFixed(1)} years</p>
+                <p class="sum-text">Interest Saved: $${(data.schedule[data.schedule.length - 1].totalPayment - data.scheduleWithExtra[data.scheduleWithExtra.length - 1].totalPayment).toFixed(2)}</p>
+            `;
+        }
+
+        document.getElementById('loanForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const container = document.getElementById('bin')
+            const principal = parseFloat(document.getElementById('loanAmount').value);
+            const annualRate = parseFloat(document.getElementById('interestRate').value);
+            const monthlyPayment = parseFloat(document.getElementById('monthlyPayment').value);
+            const extraPayment = parseFloat(document.getElementById('extraPayment').value) || 0;
+            
+            const result = calculateLoan(principal, annualRate, monthlyPayment, extraPayment);
+            updateChart(result);
+            updateSummary(result);
+            container.style.display = 'flex'
+        });
+
+        // Calculate on page load
+    </script>
+</body>
+</html> 
